@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="548.0" prefWidth="600.0" style="-fx-background-color: #3D4956;" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="biz.oneilindustries.Controller">
+   <children>
+      <AnchorPane fx:id="portsPage" layoutY="76.0" minWidth="-Infinity" prefHeight="548.0" prefWidth="600.0" style="-fx-background-color: #3D4956;" visible="false">
+         <children>
+            <TableView fx:id="portsTable" layoutX="40.0" layoutY="36.0" prefHeight="460.0" prefWidth="520.0" style="-fx-background-color: #3D4956;">
+              <columns>
+                <TableColumn fx:id="portCol" prefWidth="104.0" text="Port" />
+                <TableColumn fx:id="protocolCol" prefWidth="79.0" text="Protocol" />
+                  <TableColumn fx:id="addressCol" prefWidth="136.0" text="Address" />
+                  <TableColumn fx:id="descriptionCol" prefWidth="199.0" text="Description" />
+              </columns>
+            </TableView>
+            <Button fx:id="getPortsButton" layoutX="268.0" layoutY="496.0" mnemonicParsing="false" onAction="#addPorts" text="Get Ports" />
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="homePage" layoutY="76.0" minWidth="-Infinity" prefHeight="531.0" prefWidth="600.0" style="-fx-background-color: #3D4956;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="76.0">
+         <children>
+            <TextField fx:id="localIPAddress" layoutX="259.0" layoutY="57.0" prefHeight="25.0" prefWidth="191.0" />
+            <Label accessibleRole="PARENT" layoutX="149.0" layoutY="61.0" prefHeight="17.0" prefWidth="103.0" text="Local IP Address" textFill="WHITE" AnchorPane.leftAnchor="149.0">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
+            <TextField fx:id="originalPort" layoutX="259.0" layoutY="104.0" prefHeight="25.0" prefWidth="191.0" />
+            <Label accessibleRole="PARENT" layoutX="150.0" layoutY="108.0" prefHeight="17.0" prefWidth="89.0" text="Original Port" textAlignment="CENTER" textFill="WHITE" AnchorPane.leftAnchor="149.0">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+               <tooltip>
+                  <Tooltip text="Port to forward" />
+               </tooltip></Label>
+            <Label accessibleRole="PARENT" layoutX="150.0" layoutY="207.0" prefHeight="17.0" prefWidth="89.0" text="Protocol" textAlignment="CENTER" textFill="WHITE" AnchorPane.leftAnchor="149.0">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
+            <ChoiceBox fx:id="protocolChoiceBox" layoutX="260.0" layoutY="203.0" prefHeight="25.0" prefWidth="191.0" value="Protocol">
+               <items>
+                  <FXCollections fx:factory="observableArrayList">
+                     <String fx:value="tcp_udp" />
+                     <String fx:value="udp" />
+                     <String fx:value="tcp" />
+                  </FXCollections>
+               </items>
+            </ChoiceBox>
+            <Label accessibleRole="PARENT" layoutX="150.0" layoutY="258.0" prefHeight="17.0" prefWidth="89.0" text="Description" textAlignment="CENTER" textFill="WHITE" AnchorPane.leftAnchor="149.0">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
+            <Button fx:id="portSubmitButton" accessibleRole="PARENT" layoutX="274.0" layoutY="336.0" mnemonicParsing="false" onAction="#submitButton" text="Submit" />
+            <TextField fx:id="portDescription" layoutX="260.0" layoutY="254.0" prefHeight="25.0" prefWidth="191.0" />
+            <TextField fx:id="portToForward" layoutX="259.0" layoutY="154.0" prefHeight="25.0" prefWidth="191.0" />
+            <Label accessibleRole="PARENT" layoutX="151.0" layoutY="158.0" prefHeight="17.0" prefWidth="103.0" text="Forward To Port" textAlignment="CENTER" textFill="WHITE" AnchorPane.leftAnchor="149.0">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+               <tooltip>
+                  <Tooltip text="Port to forward original port to" />
+               </tooltip>
+            </Label>
+         </children></AnchorPane>
+      <AnchorPane layoutY="-2.0" prefHeight="78.0" prefWidth="600.0" style="-fx-background-color: #38434f;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-2.0">
+         <children>
+            <HBox alignment="CENTER" layoutX="178.0" prefHeight="78.0" prefWidth="254.0">
+               <children>
+                  <ImageView fitHeight="68.0" fitWidth="97.0" onMouseClicked="#openHomePage" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/icons8-home-480.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fitHeight="68.0" fitWidth="141.0" onMouseClicked="#openSettingsPage" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/setting.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fitHeight="68.0" fitWidth="141.0" onMouseClicked="#openPortsPage" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/port.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </HBox>
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="settingsPage" layoutY="76.0" minWidth="-Infinity" prefHeight="531.0" prefWidth="600.0" style="-fx-background-color: #3D4956;" visible="false">
+         <children>
+            <TextField fx:id="serverAddress" layoutX="259.0" layoutY="56.0" prefHeight="25.0" prefWidth="191.0" />
+            <Label layoutX="149.0" layoutY="60.0" prefHeight="17.0" prefWidth="89.0" text="Server Address" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
+            <TextField fx:id="serverPort" layoutX="259.0" layoutY="112.0" prefHeight="25.0" prefWidth="191.0" />
+            <Label layoutX="149.0" layoutY="116.0" prefHeight="17.0" prefWidth="89.0" text="Port" textAlignment="CENTER" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+               <tooltip>
+                  <Tooltip text="Server's port defined in the server config" />
+               </tooltip></Label>
+            <Label layoutX="149.0" layoutY="172.0" prefHeight="17.0" prefWidth="89.0" text="PassPhrase" textAlignment="CENTER" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+               <tooltip>
+                  <Tooltip text="Enter the server's password" />
+               </tooltip></Label>
+            <Button layoutX="274.0" layoutY="336.0" mnemonicParsing="false" onAction="#saveButton" text="Save" />
+            <TextField fx:id="serverPassphrase" layoutX="259.0" layoutY="168.0" prefHeight="25.0" prefWidth="191.0" />
+            <Label layoutX="149.0" layoutY="228.0" prefHeight="17.0" prefWidth="89.0" text="Client Name" textAlignment="CENTER" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+               <tooltip>
+                  <Tooltip text="Enter the name of the user who will be using this client" />
+               </tooltip>
+            </Label>
+            <TextField fx:id="clientUsername" layoutX="259.0" layoutY="224.0" prefHeight="25.0" prefWidth="191.0" />
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>
