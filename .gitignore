@@ -1,0 +1,6 @@
+
+*.xml
+out/
+.idea/
+*.iml
+*.log

@@ -26,7 +26,8 @@ public class ServerConnect {
 
     public boolean sendPort(Port port) {
         try (Socket socket = new Socket(serverAddress, serverPort)) {
-            socket.setSoTimeout(20000);
+            //Had to set high timeout due to the slow response from EdgeOS when there is a larger port forward rule dataset
+            socket.setSoTimeout(60000);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
             String option = "sendPort:" + serverPassPhrase;

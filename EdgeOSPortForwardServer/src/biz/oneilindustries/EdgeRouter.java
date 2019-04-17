@@ -34,31 +34,25 @@ public class EdgeRouter {
 
     private String username;
     private String password;
-    static private BasicCookieStore httpCookieStore;
-    static private HttpClient edgeClient;
+    private BasicCookieStore httpCookieStore;
+    private HttpClient edgeClient;
     private String url;
     private JsonObject edgeRouterInformation;
     private static final Logger logger = LogManager.getLogger(EdgeRouter.class);
 
-    public EdgeRouter(String username, String password, String url) {
+    public EdgeRouter(String username, String password, String url) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
         this.username = username;
         this.password = password;
         this.url = url;
-    }
+        this.httpCookieStore = new BasicCookieStore();
 
-    static {
-        httpCookieStore = new BasicCookieStore();
         HostnameVerifier allowAllHosts = new NoopHostnameVerifier();
-        try {
-            SSLContext sslContext = SSLContextBuilder
-                .create()
-                .loadTrustMaterial(new TrustSelfSignedStrategy())
-                .build();
-            SSLConnectionSocketFactory connectionFactory = new SSLConnectionSocketFactory(sslContext, allowAllHosts);
-            edgeClient = HttpClients.custom().setSSLHostnameVerifier(allowAllHosts).setSSLSocketFactory(connectionFactory).setDefaultCookieStore(httpCookieStore).build();
-        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-            logger.error("SSL Error", e);
-        }
+        SSLContext sslContext = SSLContextBuilder
+            .create()
+            .loadTrustMaterial(new TrustSelfSignedStrategy())
+            .build();
+        SSLConnectionSocketFactory connectionFactory = new SSLConnectionSocketFactory(sslContext, allowAllHosts);
+        edgeClient = HttpClients.custom().setSSLHostnameVerifier(allowAllHosts).setSSLSocketFactory(connectionFactory).setDefaultCookieStore(httpCookieStore).build();
     }
 
     public void setEdgeRouterInformation(JsonObject edgeRouterInformation) {
@@ -76,11 +70,12 @@ public class EdgeRouter {
             edgePost.setEntity(encodedFormData);
             edgeClient.execute(edgePost);
             edgePost.releaseConnection();
-            return true;
+            //If the router login is successful then 3 cookies are created. If it isn't successful then only one is created
+            return httpCookieStore.getCookies().size() > 1;
         } catch (IOException e) {
             logger.error("Error getting cookie", e);
-            return false;
         }
+        return false;
     }
 
     public JsonObject postToRouter(String PostData) {
@@ -92,12 +87,10 @@ public class EdgeRouter {
             edgeResponse = edgeClient.execute(edgePost);
 
             String response = EntityUtils.toString(edgeResponse.getEntity());
-
-            JsonParser jsonParser = new JsonParser();
-            JsonElement jsonTree = jsonParser.parse(response);
+            JsonElement jsonTree = new JsonParser().parse(response);
 
             return jsonTree.getAsJsonObject();
-        } catch (IOException e) {
+        } catch (IOException | IndexOutOfBoundsException e) {
             logger.error("Error Posting to Router", e);
         } finally {
             edgePost.releaseConnection();
@@ -110,7 +103,11 @@ public class EdgeRouter {
     }
 
     public JsonArray getPortJson() {
-        return edgeRouterInformation.getAsJsonObject("data").getAsJsonArray("rules-config");
+        JsonElement portRulesArray = edgeRouterInformation.getAsJsonObject("data").get("rules-config");
+        if (portRulesArray.isJsonArray()) {
+            return portRulesArray.getAsJsonArray();
+        }
+        return new JsonArray();
     }
 
     public JsonArray getLanConfig() {

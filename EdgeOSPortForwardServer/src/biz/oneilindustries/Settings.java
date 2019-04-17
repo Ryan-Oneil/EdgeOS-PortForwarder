@@ -16,6 +16,8 @@ public class Settings {
     private String edgePassword;
     private String serverPassword;
     private int serverListenPort;
+    private boolean enableDiscordNotify;
+    private String discordWebhook;
     private static final Logger logger = LogManager.getLogger(Settings.class);
 
     public Settings() {
@@ -27,6 +29,8 @@ public class Settings {
             this.edgePassword = "ubnt";
             this.serverPassword = "NoneSet";
             this.serverListenPort = 5000;
+            this.enableDiscordNotify = false;
+            this.discordWebhook = "disabled";
             saveSettings();
         }
     }
@@ -51,6 +55,14 @@ public class Settings {
         return serverListenPort;
     }
 
+    public boolean isEnableDiscordNotify() {
+        return enableDiscordNotify;
+    }
+
+    public String getDiscordWebhook() {
+        return discordWebhook;
+    }
+
     public void saveSettings() {
         try (FileOutputStream settingsFile = new FileOutputStream("settings.properties")) {
             Properties settings = new Properties();
@@ -59,6 +71,8 @@ public class Settings {
             settings.setProperty("EdgeRouterPassword", edgePassword);
             settings.setProperty("ServerPassPhrase", serverPassword);
             settings.setProperty("serverListenPort", "" + serverListenPort);
+            settings.setProperty("enableDiscordNotify", "" + enableDiscordNotify);
+            settings.setProperty("discordWebhook",discordWebhook);
             settings.store(settingsFile, "EdgeOS Router Settings");
         } catch (IOException e) {
             logger.error("Error Saving Settings", e);
@@ -74,6 +88,8 @@ public class Settings {
             edgePassword = settings.getProperty("EdgeRouterPassword");
             serverPassword = settings.getProperty("ServerPassPhrase");
             serverListenPort = Integer.valueOf(settings.getProperty("serverListenPort"));
+            enableDiscordNotify = Boolean.valueOf(settings.getProperty("enableDiscordNotify"));
+            discordWebhook = settings.getProperty("discordWebhook");
         } catch (IOException e) {
             logger.error("Error Getting Settings", e);
         }

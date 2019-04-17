@@ -64,4 +64,15 @@ public class Port implements Serializable {
         }
         return "Null Port";
     }
+
+    @Override
+    public String toString() {
+        return "Port{" +
+            "originalPort='" + originalPort + '\'' +
+            ", protocol='" + protocol + '\'' +
+            ", localAddress='" + localAddress + '\'' +
+            ", portToForward='" + portToForward + '\'' +
+            ", description='" + description + '\'' +
+            '}';
+    }
 }

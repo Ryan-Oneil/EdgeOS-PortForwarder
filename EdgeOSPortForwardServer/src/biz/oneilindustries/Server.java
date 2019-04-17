@@ -3,6 +3,9 @@ package biz.oneilindustries;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,11 +24,15 @@ public class Server implements Runnable {
     public Server(Socket socket) {
         this.socket = socket;
         this.settingsFile = new Settings();
-        this.edge = new EdgeRouter(settingsFile.getEdgeUsername(), settingsFile.getEdgePassword(), settingsFile.getURL());
     }
 
     @Override
     public void run() {
+        try {
+            this.edge = new EdgeRouter(settingsFile.getEdgeUsername(), settingsFile.getEdgePassword(), settingsFile.getURL());
+        } catch (KeyStoreException | NoSuchAlgorithmException | KeyManagementException e) {
+            logger.error("Error creating EdgeRouter Client", e);
+        }
         System.out.println(socket.getInetAddress().getHostAddress() + " has connected");
         if (EdgeSetup()) {
             try {
@@ -34,36 +41,9 @@ public class Server implements Runnable {
                 String option = (String) objectInputStream.readObject();
 
                 if (option.trim().equals("getPorts:" + settingsFile.getServerPassword())) {
-                    if (edge.getCookie()) {
-                        ArrayList<Port> ports = portForwards.getPorts();
-                        //Added null so the client can determine the end of the data stream
-                        ports.add(null);
-                        System.out.println("Sending Client List of Ports");
-                        for (Port port : ports) {
-                            objectOutputStream.writeObject(port);
-                            objectOutputStream.reset();
-                        }
-                    }
+                    sendPorts(objectOutputStream);
                 } else if (option.trim().equals("sendPort:" + settingsFile.getServerPassword())) {
-                    if (edge.getCookie()) {
-                        Port port = (Port) objectInputStream.readObject();
-                        System.out.println("Got Port Data: " + port.getLocalAddress() + " " + port.getPortToForward() + " " + port.getDescription());
-                        String isValid = port.isValid(port);
-                        String result;
-                        if (isValid.equals("valid")) {
-                            if (postPort(port)) {
-                                System.out.println("Successfully posted Port");
-                                result = "success";
-                            } else {
-                                System.out.println("Error posting");
-                                result = "error";
-                            }
-                            objectOutputStream.writeObject(result);
-                            objectOutputStream.flush();
-                        } else {
-                            System.out.println("The Port received is invalid error: " + isValid);
-                        }
-                    }
+                    getPort(objectOutputStream, objectInputStream);
                 }
             } catch (IOException | ClassNotFoundException e) {
                 logger.error("Server Exception", e);
@@ -75,6 +55,43 @@ public class Server implements Runnable {
                     logger.error("Socket Exception", e);
                 }
             }
+        }else {
+            System.out.println("Unable to reach Router. Ending connection with " + socket.getLocalAddress().getHostAddress());
+        }
+    }
+
+    private void getPort(ObjectOutputStream objectOutputStream, ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException {
+        Port port = (Port) objectInputStream.readObject();
+        System.out.println("Got Port Data: " + port.getLocalAddress() + " " + port.getPortToForward() + " " + port.getDescription());
+        String isValidResult = port.isValid(port);
+        String result;
+        if (isValidResult.equals("valid")) {
+            if (postPort(port)) {
+                System.out.println("Successfully posted Port");
+                result = "success";
+            } else {
+                System.out.println("Error posting");
+                result = "error";
+            }
+            objectOutputStream.writeObject(result);
+            objectOutputStream.flush();
+            if (settingsFile.isEnableDiscordNotify()) {
+                DiscordWebhook discordWebhook = new DiscordWebhook(settingsFile.getDiscordWebhook());
+                discordWebhook.sendNotification(port.toString());
+            }
+        } else {
+            System.out.println("The Port received is invalid error: " + isValidResult);
+        }
+    }
+
+    private void sendPorts(ObjectOutputStream objectOutputStream) throws IOException {
+        ArrayList<Port> ports = portForwards.getPorts();
+        //Added null so the client can determine the end of the data stream
+        ports.add(null);
+        System.out.println("Sending Client List of Ports");
+        for (Port port : ports) {
+            objectOutputStream.writeObject(port);
+            objectOutputStream.reset();
         }
     }
 
@@ -103,11 +120,10 @@ public class Server implements Runnable {
                 return (response.getAsJsonObject("FEATURE").getAsJsonPrimitive("success").getAsInt()) == 1;
             } else {
                 System.out.println("Post Data didn't contain ports, Possible parsing error");
-                return false;
             }
         } catch (JsonParseException e) {
             logger.error("Parsing Exception", e);
-            return false;
         }
+        return false;
     }
 }
